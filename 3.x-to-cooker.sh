@@ -33,6 +33,10 @@ for i in $PACKAGES; do
 	fi
 	wget $PKGS/$P
 done
+# --oldpackage is to allow rpm to go from 5.x to 4.x without forcing an Epoch
+# --force shouldn't be needed, but is there just in case someone manually
+# installed a relevant cooker package before. That shouldn't make the rpm
+# command fail.
 # --nodeps is because rpm-build and friends may or may not be installed.
 # If they're installed, they require the old version of rpm,
 # causing -Uvh to fail with rpm-build etc. not being updated at the
@@ -42,7 +46,7 @@ done
 # fulfilled.
 # So for now, update the minimal set of required packages and let dnf
 # handle the rest.
-rpm -Uvh --oldpackage --nodeps *.rpm
+rpm -Uvh --force --oldpackage --nodeps *.rpm
 rpm --rebuilddb
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
