@@ -24,7 +24,7 @@ else
 fi
 PKGS=http://abf-downloads.openmandriva.org/cooker/repository/$ARCH/main/release/
 curl -s -L $PKGS |grep '^<a' |cut -d'"' -f2 >PACKAGES
-PACKAGES="createrepo_c deltarpm distro-release-OpenMandriva distro-release-common dnf dnf-automatic dnf-conf dnf-yum dwz hawkey-man ${LIB}comps0 ${LIB}createrepo_c0 ${LIB}crypto1.1 ${LIB}ssl1.1 ${LIB}db6.2 ${LIB}dnf-gir1.0 ${LIB}dnf1 ${LIB}gpgme11 ${LIB}gpgmepp6 ${LIB}repo0 ${LIB}rpm8 ${LIB}rpmbuild8 ${LIB}rpmsign8 ${LIB}solv0 ${LIB}solvext0 libsolv openmandriva-repos openmandriva-repos-cooker openmandriva-repos-keys openmandriva-repos-pkgprefs ${LIB}python3.7m_1 python python-dnf python-dnf-plugin-leaves python-dnf-plugin-local python-dnf-plugin-show-leaves python-dnf-plugin-versionlock python-dnf-plugins-core python-gpg python-hawkey python-iniparse python-libcomps python-librepo python-rpm python-six rpm rpm-openmandriva-setup rpm-plugin-ima rpm-plugin-syslog rpm-plugin-systemd-inhibit rpm-sign rpmlint rpmlint-distro-policy"
+PACKAGES="createrepo_c db52_utils db62_utils deltarpm distro-release-OpenMandriva distro-release-common dnf dnf-automatic dnf-conf dnf-yum dwz hawkey-man ${LIB}comps0 ${LIB}createrepo_c0 ${LIB}crypto1.1 ${LIB}ssl1.1 ${LIB}db6.2 ${LIB}dnf-gir1.0 ${LIB}dnf1 ${LIB}gpgme11 ${LIB}gpgmepp6 ${LIB}repo0 ${LIB}rpm8 ${LIB}rpmbuild8 ${LIB}rpmsign8 ${LIB}solv0 ${LIB}solvext0 libsolv openmandriva-repos openmandriva-repos-cooker openmandriva-repos-keys openmandriva-repos-pkgprefs ${LIB}python3.7m_1 python python-dnf python-dnf-plugin-leaves python-dnf-plugin-local python-dnf-plugin-show-leaves python-dnf-plugin-versionlock python-dnf-plugins-core python-gpg python-hawkey python-iniparse python-libcomps python-librepo python-rpm python-six rpm rpm-openmandriva-setup rpm-plugin-ima rpm-plugin-syslog rpm-plugin-systemd-inhibit rpm-sign rpmlint rpmlint-distro-policy"
 for i in $PACKAGES; do
 	P=`grep "^$i-[0-9].*" PACKAGES`
 	if [ "$?" != "0" ]; then
@@ -47,6 +47,11 @@ done
 # So for now, update the minimal set of required packages and let dnf
 # handle the rest.
 rpm -Uvh --force --oldpackage --nodeps *.rpm
+cd /var/lib/rpm
+db52_dump Packages | db62_restore Packages.NEW
+mv Packages Packages.OLD
+mv Packages.NEW Packages
+cd -
 rpm --rebuilddb
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
