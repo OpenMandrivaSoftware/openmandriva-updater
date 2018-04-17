@@ -48,13 +48,14 @@ done
 # handle the rest.
 rpm -Uvh --force --oldpackage --nodeps *.rpm
 cd /var/lib/rpm
-mkdir RPMNEW
-mv Packages ./RPMNEW/
-cd ./RPMNEW
-db52_dump Packages | db62_load Packages.NEW
-mv Packages.NEW  ../Packages
+mkdir /var/lib/RPMNEW
+mv Packages /var/lib/RPMNEW/
+cd /var/lib/RPMNEW
+/bin/rm -R /var/lib/rpm/*
+db52_dump ./Packages | db62_load ./Packages.NEW
+mv /var/lib/RPMNEW Packages.NEW  /var/lib/Packages
 cd ../
-/bin/rm -R ./RPMNEW
+/bin/rm -R /var/lib/RPMNEW
 cd -
 rpm --rebuilddb
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
