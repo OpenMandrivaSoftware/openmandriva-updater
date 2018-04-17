@@ -48,13 +48,13 @@ done
 # handle the rest.
 rpm -Uvh --force --oldpackage --nodeps *.rpm
 cd /var/lib/rpm
-mkdir /var/lib/RPMNEW
+mkdir -p /var/lib/RPMNEW
 mv Packages /var/lib/RPMNEW/
 cd /var/lib/RPMNEW
 /bin/rm -R /var/lib/rpm/*
 db52_dump ./Packages | db62_load ./Packages.NEW
-mv /var/lib/RPMNEW Packages.NEW  /var/lib/Packages
-cd ../
+mv /var/lib/RPMNEW/Packages.NEW  /var/lib/Packages
+cd /var/lib
 /bin/rm -R /var/lib/RPMNEW
 cd -
 rpm --rebuilddb
