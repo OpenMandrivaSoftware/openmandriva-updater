@@ -61,7 +61,7 @@ rpm --rebuilddb
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
 dnf upgrade --nogpgcheck
-printf "%\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerase --exclude <package_name> flags" "these actions come with no guaratees!"
+printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerase --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
 rm -rf "$TMPDIR"
