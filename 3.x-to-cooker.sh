@@ -51,8 +51,9 @@ cd /var/lib/rpm
 mkdir RPMNEW
 mv Packages ./RPMNEW/
 cd ./RPMNEW
-db52_dump Packages | db62_restore Packages.NEW
+db52_dump Packages | db62_load Packages.NEW
 mv Packages.NEW  ../Packages
+cd ../
 /bin/rm -R ./RPMNEW
 cd -
 rpm --rebuilddb
