@@ -64,7 +64,7 @@ mv Packages /var/lib/RPMNEW/
 cd /var/lib/RPMNEW
 /bin/rm -R /var/lib/rpm/*
 db52_dump ./Packages | db62_load ./Packages.NEW
-mv /var/lib/RPMNEW/Packages.NEW  /var/lib/Packages
+mv /var/lib/RPMNEW/Packages.NEW  /var/lib/rpm/Packages
 cd /var/lib
 /bin/rm -R /var/lib/RPMNEW
 cd -
