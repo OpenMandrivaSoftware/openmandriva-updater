@@ -22,20 +22,10 @@ if echo $ARCH |grep -q 64; then
 else
 	LIB=lib
 fi
-#LX3PKGS=http://abf-downloads.openmandriva.org/3.0/repository/$ARCH/main/release/
 PKGS=http://abf-downloads.openmandriva.org/cooker/repository/$ARCH/main/release/
-#curl -s -L $LX3PKGS |grep '^<a' |cut -d'"' -f2 >LX3PACKAGES
 curl -s -L $PKGS |grep '^<a' |cut -d'"' -f2 >PACKAGES
-#LX3PACKAGES="db52-utils"
 PACKAGES="createrepo_c db52-utils db62-utils deltarpm distro-release-OpenMandriva distro-release-common dnf dnf-automatic dnf-conf dnf-yum dwz hawkey-man ${LIB}comps0 ${LIB}createrepo_c0 ${LIB}crypto1.1 ${LIB}ssl1.1 ${LIB}db6.2 ${LIB}dnf-gir1.0 ${LIB}dnf1 ${LIB}gpgme11 ${LIB}gpgmepp6 ${LIB}repo0 ${LIB}rpm8 ${LIB}rpmbuild8 ${LIB}rpmsign8 ${LIB}solv0 ${LIB}solvext0 libsolv openmandriva-repos openmandriva-repos-cooker openmandriva-repos-keys openmandriva-repos-pkgprefs ${LIB}python3.7m_1 python python-dnf python-dnf-plugin-leaves python-dnf-plugin-local python-dnf-plugin-show-leaves python-dnf-plugin-versionlock python-dnf-plugins-core python-gpg python-hawkey python-iniparse python-libcomps python-librepo python-rpm python-six rpm rpm-openmandriva-setup rpm-plugin-ima rpm-plugin-syslog rpm-plugin-systemd-inhibit rpm-sign rpmlint rpmlint-distro-policy"
-#for i in $LX3PACKAGES; do
-#        P=`grep "^$i-[0-9].*" LX3PACKAGES`
-#        if [ "$?" != "0" ]; then
-#                echo "Can't find Lx3 version of $i, please report"
-#                exit 1
-#        fi
-#        wget $PKGS/$P
-#done
+
 for i in $PACKAGES; do
 	P=`grep "^$i-[0-9].*" PACKAGES`
 	if [ "$?" != "0" ]; then
@@ -61,18 +51,23 @@ rpm -Uvh --force --oldpackage --nodeps *.rpm
 cd /var/lib/rpm
 mkdir -p /var/lib/RPMNEW
 mv Packages /var/lib/RPMNEW/
+mv alternatives /var/lib/RPMNEW/
+mv triggers /var/lib/RPMNEW/
 cd /var/lib/RPMNEW
 /bin/rm -R /var/lib/rpm/*
 db52_dump ./Packages | db62_load ./Packages.NEW
 mv /var/lib/RPMNEW/Packages.NEW  /var/lib/rpm/Packages
+mv /var/lib/RPMNEW/alternatives /var/lib/rpm/
+mv /var/lib/RPMNEW/triggers /var/lib/rpm/
 cd /var/lib
 /bin/rm -R /var/lib/RPMNEW
 cd -
 rpm --rebuilddb
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
-dnf upgrade --nogpgcheck
-printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerase --exclude <package_name> flags" "these actions come with no guaratees!"
+#dnf upgrade --nogpgcheck
+dnf --releasever=cooker upgrade --nogpgcheck --allowerasing --exclude gtksourceview
+printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
 rm -rf "$TMPDIR"
