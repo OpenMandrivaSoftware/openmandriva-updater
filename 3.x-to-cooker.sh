@@ -77,8 +77,9 @@ rpm -Uvh --force --oldpackage --nodeps *.rpm
 
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
-dnf -y erase perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf
-dnf --releasever=cooker distro-sync --nogpgcheck --allowerasing --best --exclude gtksourceview --exclude akonadi-contacts
+dnf -y erase perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf perl
+dnf --releasever=cooker --nogpgcheck --allowerasing --best --exclude gtksourceview --exclude akonadi-contacts distro-sync
+dnf --releasever=cooker --nogpgcheck --allowerasing --best install perl
 printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
