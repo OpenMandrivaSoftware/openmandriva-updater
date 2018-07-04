@@ -77,7 +77,7 @@ rpm -Uvh --force --oldpackage --nodeps *.rpm
 
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
-dnf -y erase perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf
+dnf -y erase perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf gurpmi genhdlist2
 # Workaround for dnf transaction error on perl-base, don't worry, perl
 # automatically gets reinstalled by dnf (as a dependency of packages
 # that are being updated)
