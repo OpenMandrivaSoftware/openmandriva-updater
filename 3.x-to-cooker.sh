@@ -63,6 +63,9 @@ rpm -Uvh --force --oldpackage --nodeps *.rpm
 # After installing the necessary packages let's restore the original db because now we have the necessary libraries to convert it properly
 cp /var/lib/RPMNEW/Packages /var/lib/rpm/
 cd -
+# Rebuild the rpmdb twice, first attempt likely fails but corrects the failure,
+# enabling the second run to succeed
+rpm --rebuilddb
 rpm --rebuilddb
 # Now we have a good db move back some useful files
 mv /var/lib/RPMNEW/alternatives /var/lib/rpm/
@@ -70,10 +73,14 @@ mv /var/lib/RPMNEW/filetriggers /var/lib/rpm/
 cd /var/lib
 # Remove the backup directory
 /bin/rm -R /var/lib/RPMNEW
-# This bits important. Re-install the packages that we installed to allow us to update
+# Rebuild the rpmdb again
+rpm --rebuilddb
+# This bit is important. Re-install the packages that we installed to allow us to update
 # Now the db should be fully current
 cd "$TMPDIR"
-rpm -Uvh --force --oldpackage --nodeps *.rpm
+rpm -Uvh --justdb --force --oldpackage --nodeps *.rpm
+# Workaround for /bin/sh sometimes disappearing from Provides:
+dnf -y --releasever=cooker --nogpgcheck --allowerasing distro-sync bash
 
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
