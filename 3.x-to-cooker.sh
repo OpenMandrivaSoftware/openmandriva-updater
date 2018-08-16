@@ -83,6 +83,8 @@ dnf -y erase perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf gur
 # that are being updated)
 rpm -e --nodeps perl
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best --exclude gtksourceview --exclude akonadi-contacts distro-sync
+# Make sure plasma is back if it got uninstalled by distro-sync
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install task-plasma-minimal
 printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
