@@ -14,8 +14,11 @@ if ! [ -d "$TMPDIR" ]; then
 	exit 1
 fi
 cd "$TMPDIR"
+
+rpm -qa --qf '%{NAME}\n' >package.list
+
 ARCH=`uname -m`
-echo $ARCH |grep -qE "^arm" && ARCH=armv7hl
+echo $ARCH |grep -qE "^arm" && ARCH=armv7hnl
 echo $ARCH |grep -qE "i.86" && ARCH=i686
 if echo $ARCH |grep -q 64; then
 	LIB=lib64
@@ -96,6 +99,10 @@ dnf -y --releasever=cooker --nogpgcheck --allowerasing install bash
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best distro-sync
 # Make sure plasma is back if it got uninstalled by distro-sync
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install task-plasma-minimal
+# And make sure other packages that have gone "missing" like bash (see workaround
+# above) are reinstalled...
+sed -i -e '/kde4/d' package.list
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(cat package.list)
 printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
