@@ -79,8 +79,6 @@ rpm --rebuilddb
 # Now the db should be fully current
 cd "$TMPDIR"
 rpm -Uvh --justdb --force --oldpackage --nodeps *.rpm
-# Workaround for /bin/sh sometimes disappearing from Provides:
-dnf -y --releasever=cooker --nogpgcheck --allowerasing distro-sync bash
 
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
 cp /etc/shadow /etc/gshadow /etc/passwd /etc/group .
@@ -89,7 +87,13 @@ dnf -y erase perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf gur
 # automatically gets reinstalled by dnf (as a dependency of packages
 # that are being updated)
 rpm -e --nodeps perl
-dnf -y --releasever=cooker --nogpgcheck --allowerasing --best --exclude gtksourceview --exclude akonadi-contacts distro-sync
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best distro-sync
+# Workaround for a very weird problem: At some point during distro-sync, bash
+# is erased from rpmdb (but the files remain on the system).
+dnf -y --releasever=cooker --nogpgcheck --allowerasing install bash
+# Repeat distro-sync to get stuff that failed due wrongfully
+# thought to be missing bash
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best distro-sync
 # Make sure plasma is back if it got uninstalled by distro-sync
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install task-plasma-minimal
 printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
