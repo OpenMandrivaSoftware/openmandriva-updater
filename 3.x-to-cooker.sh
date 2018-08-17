@@ -3,12 +3,12 @@
 # (C) 2018 Bernhard Rosenkraenzer <bero@lindev.ch>
 # Released under the GPLv3
 
-if [ "`id -u`" != "0" ]; then
+if [ "$(id -u)" != '0' ]; then
 	echo "Need root access..."
 	sudo $0 "$@"
 	exit 1
 fi
-TMPDIR="`mktemp -d /tmp/upgradeXXXXXX`"
+TMPDIR="$(mktemp -d /tmp/upgradeXXXXXX)"
 if ! [ -d "$TMPDIR" ]; then
 	echo Install mktemp
 	exit 1
@@ -17,7 +17,7 @@ cd "$TMPDIR"
 
 rpm -qa --qf '%{NAME}\n' >package.list
 
-ARCH=`uname -m`
+ARCH="$(uname -m)"
 echo $ARCH |grep -qE "^arm" && ARCH=armv7hnl
 echo $ARCH |grep -qE "i.86" && ARCH=i686
 if echo $ARCH |grep -q 64; then
@@ -102,7 +102,7 @@ dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install task-plasm
 # And make sure other packages that have gone "missing" like bash (see workaround
 # above) are reinstalled...
 sed -i -e '/kde4/d' package.list
-dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(cat package.list)
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install "$(cat package.list)"
 printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
