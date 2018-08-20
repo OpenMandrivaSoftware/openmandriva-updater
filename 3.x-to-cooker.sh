@@ -15,6 +15,12 @@ if ! [ -d "$TMPDIR" ]; then
 fi
 cd "$TMPDIR"
 
+# If we're in X11, suspend screensavers because they'll break badly
+# while libraries are being replaced underneath them
+if [ -n "$DISPLAY" ]; then
+	xdg-screensaver suspend $(xprop -root _NET_ACTIVE_WINDOW |cut -d' ' -f5)
+fi
+
 # Update 3.x branch and get it into shape...
 urpmi --auto --auto-update
 urpmi --auto curl wget db52-utils
@@ -130,3 +136,8 @@ cp -f shadow gshadow passwd group /etc/
 cd /
 rm -rf "$TMPDIR"
 rm -rf ./rpmold????
+
+# Allow screensavers again, but chances are the user should reboot anyway
+if [ -n "$DISPLAY" ]; then
+	xdg-screensaver resume $(xprop -root _NET_ACTIVE_WINDOW |cut -d' ' -f5)
+fi
