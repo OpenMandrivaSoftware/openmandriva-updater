@@ -75,27 +75,15 @@ cd "$TMPDIR"
 # So for now, update the minimal set of required packages and let dnf
 # handle the rest.
 rpm -Uvh --force --oldpackage --nodeps *.rpm
-# After installing the necessary packages let's restore the original db because now we have the necessary libraries to convert it properly
+# After installing the necessary packages let's restore the original db,
+# now that we have the necessary libraries to convert it properly
+# This is still lossy due to incompatibilities between rpm5 and rpm4.
 cd /var/lib/rpm
-tries=0
-while [ "$tries" -lt 10 ]; do
-	# There is some weird issue with rpm --rebuilddb
-	# sometimes, but not always, wiping the rpmdb when
-	# the Packages file comes from rpm 5.
-	# Let's try until we're lucky.
-	tries=$((tries+1)
-	db62_load Packages <../RPMNEW/Packages.dump
-	# Rebuild the rpmdb twice, first attempt likely fails but corrects the failure,
-	# enabling the second run to succeed
-	rpm --rebuilddb
-	rpm --rebuilddb
-	[ "$(rpm -qa |wc -l)" -ge 25 ] && break
-done
-if [ "$tries" = 10 ]; then
-	echo "Restoring the rpm database after switching to rpm4 failed."
-	echo "Please find the developers on #openmandriva-cooker on freenode."
-	exit 1
-fi
+db62_load Packages <../RPMNEW/Packages.dump
+# Rebuild the rpmdb twice, first attempt likely fails but corrects the failure,
+# enabling the second run to succeed
+rpm --rebuilddb
+rpm --rebuilddb
 
 # Now we have a good db move back some useful files
 mv /var/lib/RPMNEW/alternatives /var/lib/rpm/
@@ -118,21 +106,22 @@ cp -f /etc/shadow /etc/gshadow /etc/passwd /etc/group .
 # automatically gets reinstalled by dnf (as a dependency of packages
 # that are being updated)
 rpm -e --nodeps perl
-dnf -y --releasever=cooker --nogpgcheck --allowerasing --best distro-sync
-# Workaround for a very weird problem: At some point during distro-sync, bash
-# is erased from rpmdb (but the files remain on the system).
+# Workaround for bash going missing from rpmdb during the rpm4 transition
 dnf -y --releasever=cooker --nogpgcheck --allowerasing install bash
-# Repeat distro-sync to get stuff that failed due wrongfully
-# thought to be missing bash
+# Let's try updating...
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best distro-sync
 # Make sure plasma is back if it got uninstalled by distro-sync
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install task-plasma-minimal
-# And make sure other packages that have gone "missing" like bash (see workaround
-# above) are reinstalled...
-# ^lib.* is excluded because sonames change (and libraries anything depends on will
-# be pulled in anyway).
-dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(sed -e '/kde4/d;/^lib.*/d;/.*qt4.*/d' package.list)
-printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
+# Make sure other packages that disappeared during the rpm transition
+# are reinstalled...
+# Some packages are, obviously, removed (lib64something$OLDSONAME etc.)
+# So we'll remove packages that don't exist anymore from the list
+cp package.list package.list.orig
+LANG=C LC_ALL=C LINGUAS=C dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(cat package.list) 2>&1 |grep "^No match for argument" |cut -d: -f2 |while read r; do
+	sed -i -e "/^$r\$/d" package.list
+done
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(cat package.list)
+
 cp -f shadow gshadow passwd group /etc/
 cd /
 rm -rf "$TMPDIR"
