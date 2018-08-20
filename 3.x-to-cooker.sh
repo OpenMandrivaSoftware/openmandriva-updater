@@ -3,12 +3,12 @@
 # (C) 2018 Bernhard Rosenkraenzer <bero@lindev.ch>
 # Released under the GPLv3
 
-if [ "`id -u`" != "0" ]; then
+if [ "$(id -u)" != '0' ]; then
 	echo "Need root access..."
 	sudo $0 "$@"
 	exit 1
 fi
-TMPDIR="`mktemp -d /tmp/upgradeXXXXXX`"
+TMPDIR="$(mktemp -d /tmp/upgradeXXXXXX)"
 if ! [ -d "$TMPDIR" ]; then
 	echo Install mktemp
 	exit 1
@@ -20,7 +20,7 @@ urpmi --auto curl wget
 
 rpm -qa --qf '%{NAME}\n' >package.list
 
-ARCH=`uname -m`
+ARCH="$(uname -m)"
 echo $ARCH |grep -qE "^arm" && ARCH=armv7hnl
 echo $ARCH |grep -qE "i.86" && ARCH=i686
 if echo $ARCH |grep -q 64; then
