@@ -15,6 +15,9 @@ if ! [ -d "$TMPDIR" ]; then
 fi
 cd "$TMPDIR"
 
+urpmi -y --auto --auto-update
+urpmi --auto curl wget
+
 rpm -qa --qf '%{NAME}\n' >package.list
 
 ARCH=`uname -m`
@@ -26,11 +29,7 @@ else
 	LIB=lib
 fi
 PKGS=http://abf-downloads.openmandriva.org/cooker/repository/$ARCH/main/release/
-if [ -e /usr/bin/curl ]; then
-	curl -s -L $PKGS |grep '^<a' |cut -d'"' -f2 >PACKAGES
-else
-	wget -o /dev/null -O - $PKGS |grep '^<a' |cut -d'"' -f2 >PACKAGES
-fi
+curl -s -L $PKGS |grep '^<a' |cut -d'"' -f2 >PACKAGES
 PACKAGES="deltarpm distro-release-OpenMandriva distro-release-common dnf dnf-automatic dnf-conf dnf-yum dwz hawkey-man glibc ${LIB}comps0 ${LIB}createrepo_c0 ${LIB}crypto1.1 ${LIB}ssl1.1 ${LIB}curl4 ${LIB}db6.2 ${LIB}dnf2 ${LIB}idn2_0 ${LIB}gpgme11 ${LIB}gpgmepp6 ${LIB}repo0 ${LIB}rpm8 ${LIB}rpmbuild8 ${LIB}rpmsign8 ${LIB}solv0 ${LIB}solvext0 ${LIB}zstd1 ${LIB}lua5.3 libsolv openmandriva-repos openmandriva-repos-cooker openmandriva-repos-keys openmandriva-repos-pkgprefs ${LIB}python3.7m_1 ${LIB}stdc%2B%2B6 ${LIB}json-c4 ${LIB}yaml0_2 ${LIB}crypt1 python python-dnf python-dnf-plugin-leaves python-dnf-plugin-show-leaves python-dnf-plugin-versionlock python-dnf-plugins-core python-libdnf python-gi python-smartcols ${LIB}modulemd-gir1.0 ${LIB}modulemd1 ${LIB}glib2.0_0 ${LIB}gobject2.0_0 ${LIB}girepository1.0_1 ${LIB}glib-gir2.0 python-gpg python-hawkey python-iniparse python-libcomps python-librepo python-rpm python-six rpm rpm-openmandriva-setup rpm-plugin-ima rpm-plugin-syslog rpm-plugin-systemd-inhibit rpm-sign rpmlint rpmlint-distro-policy"
 for i in $PACKAGES; do
 	P=`grep "^$i-[0-9].*" PACKAGES`
@@ -101,8 +100,9 @@ dnf -y --releasever=cooker --nogpgcheck --allowerasing --best distro-sync
 dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install task-plasma-minimal
 # And make sure other packages that have gone "missing" like bash (see workaround
 # above) are reinstalled...
-sed -i -e '/kde4/d' package.list
-dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(cat package.list)
+# ^lib.* is excluded because sonames change (and libraries anything depends on will
+# be pulled in anyway).
+dnf -y --releasever=cooker --nogpgcheck --allowerasing --best install $(sed -e '/kde4/d;/^lib.*/d;/.*qt4.*/d' package.list)
 printf "%s\n" "You may wish to run the dnf upgrade --nogpgcheck as second time" "using the --allowerasing --exclude <package_name> flags" "these actions come with no guaratees!"
 cp -f shadow gshadow passwd group /etc/
 cd /
