@@ -19,7 +19,7 @@ cd "$TMPDIR"
 # while libraries are being replaced underneath them
 if [ -n "$DISPLAY" ]; then
 	xdg-screensaver suspend $(xprop -root _NET_ACTIVE_WINDOW |cut -d' ' -f5)
-	SS_COOKIE=$(dbus-send --session --dest=org.freedesktop.ScreenSaver --type=method_call --print-reply --reply-timeout=2000 /org/freedesktop/ScreenSaver org.freedesktop.ScreenSaver.Inhibit string:openmandriva-updater string:"Update in progress" |tail -n1 |sed -e 's,.* ,,')
+	SS_COOKIE=$(dbus-send --session --dest=org.freedesktop.ScreenSaver --type=method_call --print-reply --reply-timeout=2000 /org/freedesktop/ScreenSaver org.freedesktop.ScreenSaver.Inhibit string:openmandriva-updater string:"Update in progress" 2>/dev/null |tail -n1 |sed -e 's,.* ,,')
 fi
 
 # Update 3.x branch and get it into shape...
@@ -28,7 +28,7 @@ urpmi --auto curl wget db52-utils
 
 # Get rid of stuff that will be replaced with alternatives
 # that have different names...
-urpme -a --auto --force perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf gurpmi genhdlist2
+urpme -a --auto --force perl-URPM perl-RPMBDB perl-MDV-Packdrakeng perl-MDV-Distribconf gurpmi genhdlist2 urpmi
 
 # Save list of installed packages for recovery purposes...
 rpm -qa --qf '%{NAME}\n' >package.list
