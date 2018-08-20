@@ -19,6 +19,7 @@ cd "$TMPDIR"
 # while libraries are being replaced underneath them
 if [ -n "$DISPLAY" ]; then
 	xdg-screensaver suspend $(xprop -root _NET_ACTIVE_WINDOW |cut -d' ' -f5)
+	SS_COOKIE=$(dbus-send --session --dest=org.freedesktop.ScreenSaver --type=method_call --print-reply --reply-timeout=2000 /org/freedesktop/ScreenSaver org.freedesktop.ScreenSaver.Inhibit string:openmandriva-updater string:"Update in progress" |tail -n1 |sed -e 's,.* ,,')
 fi
 
 # Update 3.x branch and get it into shape...
@@ -140,4 +141,5 @@ rm -rf ./rpmold????
 # Allow screensavers again, but chances are the user should reboot anyway
 if [ -n "$DISPLAY" ]; then
 	xdg-screensaver resume $(xprop -root _NET_ACTIVE_WINDOW |cut -d' ' -f5)
+	dbus-send --session --dest=org.freedesktop.ScreenSaver --type=method_call --print-reply --reply-timeout=2000 /org/freedesktop/ScreenSaver org.freedesktop.ScreenSaver.UnInhibit uint32:$(SS_COOKIE) &>/dev/null
 fi
