@@ -3,6 +3,16 @@
 # (C) 2018 Bernhard Rosenkraenzer <bero@lindev.ch>
 # Released under the GPLv3
 
+cat <<EOF
+This script isn't currently working because of
+dependency issues in cooker.
+It will, however, leave your rpmdb in a broken
+state.
+This message will be removed once the known
+dependency issues are sorted out.
+EOF
+exit 1
+
 if [ "$(id -u)" != '0' ]; then
 	echo "Need root access..."
 	sudo $0 "$@"
